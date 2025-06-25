@@ -39,6 +39,8 @@
 
 ## 界面预览
 ![cd14c7016439685825e0c2770a9b61a6](https://github.com/user-attachments/assets/d9f6f4da-7d6d-45a0-b2ed-cd8afb607159)
+![a6ce0e5827bceef430146c2f6dde4095](https://github.com/user-attachments/assets/0326801f-ebdc-4f17-9f7f-5a4b5dd4388f)
+
 
 
 ## 参与贡献
