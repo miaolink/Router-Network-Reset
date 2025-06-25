@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Router Network Reset",
+  "version": "1.0.0",
+  "description": "一键重置路由器网络，支持自定义IP、端口和Token。",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "路由器网络重置"
+  },
+  "icons": {
+    "16": "pwa-192x192.png",
+    "48": "pwa-192x192.png",
+    "128": "pwa-192x192.png"
+  }
+} 

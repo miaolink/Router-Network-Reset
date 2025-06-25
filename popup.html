@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="width:400px;min-width:400px;max-width:400px;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=400, initial-scale=1.0">
+  <title>网络状态仪表盘</title>
+  <style>
+    html, body {
+      width: 400px;
+      min-width: 400px;
+      max-width: 400px;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+      min-height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      transition: background 0.3s;
+    }
+    [data-theme="dark"] body {
+      background: linear-gradient(135deg, #23272f 0%, #1a1d22 100%);
+    }
+    .dashboard-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px 0 rgba(60,72,88,0.10);
+      padding: 32px 24px 32px 24px;
+      width: 400px;
+      min-width: 400px;
+      max-width: 400px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      gap: 10px;
+      transition: background 0.3s, color 0.3s;
+    }
+    [data-theme="dark"] .dashboard-card {
+      background: #23272f;
+      color: #e5e7eb;
+      box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
+      background: #f1f5f9;
+      object-fit: cover;
+    }
+    h2 {
+      margin: 0 0 18px 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: #2d3a4b;
+      letter-spacing: 1px;
+      text-align: center;
+      transition: color 0.3s;
+    }
+    [data-theme="dark"] h2 {
+      color: #e5e7eb;
+    }
+    .reset-btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 14px 0;
+      margin-bottom: 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #f59e42 0%, #f43f5e 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px 0 rgba(244,63,94,0.10);
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      letter-spacing: 2px;
+    }
+    .reset-btn:active {
+      background: linear-gradient(90deg, #f43f5e 0%, #f59e42 100%);
+      box-shadow: 0 1px 4px 0 rgba(244,63,94,0.18);
+    }
+    .status-gauges {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    .gauge {
+      background: linear-gradient(120deg, #f1f5f9 60%, #e0e7ff 100%);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px 0 rgba(99,102,241,0.06);
+      width: 88px;
+      height: 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      position: relative;
+      transition: box-shadow 0.2s, background 0.3s;
+      padding: 0 2px;
+    }
+    [data-theme="dark"] .gauge {
+      background: linear-gradient(120deg, #23272f 60%, #1a1d22 100%);
+      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.12);
+    }
+    .gauge-value {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #6366f1;
+      margin-bottom: 2px;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #e0e7ff;
+      word-break: break-all;
+      text-align: center;
+      line-height: 1.1;
+      max-width: 80px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      transition: color 0.3s;
+    }
+    [data-theme="dark"] .gauge-value {
+      color: #a5b4fc;
+      text-shadow: 0 2px 8px #23272f;
+    }
+    .gauge-label {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-align: center;
+      white-space: nowrap;
+      transition: color 0.3s;
+    }
+    [data-theme="dark"] .gauge-label {
+      color: #b0b8c9;
+    }
+    .settings-btn {
+      position: fixed;
+      right: 32px;
+      bottom: 32px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1 0%, #60a5fa 100%);
+      color: #fff;
+      border: none;
+      box-shadow: 0 2px 12px 0 rgba(99,102,241,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .settings-btn:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+      box-shadow: 0 4px 16px 0 rgba(99,102,241,0.22);
+    }
+    .theme-toggle-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6366f1;
+      font-size: 20px;
+      z-index: 20;
+      padding: 2px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .theme-toggle-btn:hover {
+      background: #f1f5f9;
+    }
+    [data-theme="dark"] .theme-toggle-btn {
+      color: #a5b4fc;
+      background: #23272f;
+    }
+    .settings-modal {
+      display: none;
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(60,72,88,0.18);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .settings-modal.active {
+      display: flex;
+    }
+    .settings-content {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 24px 0 rgba(60,72,88,0.18);
+      padding: 32px 28px 24px 28px;
+      min-width: 320px;
+      max-width: 90vw;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+      position: relative;
+      transition: background 0.3s, color 0.3s;
+    }
+    [data-theme="dark"] .settings-content {
+      background: #23272f;
+      color: #e5e7eb;
+      box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+    }
+    .settings-content h3 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      color: #6366f1;
+      text-align: center;
+      transition: color 0.3s;
+    }
+    [data-theme="dark"] .settings-content h3 {
+      color: #a5b4fc;
+    }
+    .settings-content label {
+      font-size: 15px;
+      color: #4b5563;
+      font-weight: 600;
+      margin-bottom: 2px;
+      transition: color 0.3s;
+    }
+    [data-theme="dark"] .settings-content label {
+      color: #b0b8c9;
+    }
+    .settings-content input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 15px;
+      background: #f1f5f9;
+      margin-bottom: 8px;
+      transition: border 0.2s, background 0.3s, color 0.3s;
+    }
+    [data-theme="dark"] .settings-content input {
+      background: #23272f;
+      color: #e5e7eb;
+      border: 1px solid #444857;
+    }
+    .settings-content input:focus {
+      border: 1.5px solid #6366f1;
+      outline: none;
+      background: #fff;
+    }
+    [data-theme="dark"] .settings-content input:focus {
+      background: #23272f;
+    }
+    .settings-content .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      justify-content: flex-end;
+    }
+    .settings-content button {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .settings-content button:last-child {
+      background: #e5e7eb;
+      color: #6366f1;
+    }
+    .settings-content button:last-child:hover {
+      background: #cbd5e1;
+    }
+    .msg {
+      margin-top: 8px;
+      font-size: 15px;
+      min-height: 22px;
+      text-align: center;
+      transition: color 0.2s;
+    }
+    [data-theme="dark"] .msg {
+      color: #f59e42;
+    }
+    /* ECharts tooltip 美化 */
+    .echarts-tooltip {
+      background: rgba(40,48,60,0.92) !important;
+      color: #fff !important;
+      border-radius: 8px !important;
+      border: 1px solid rgba(60,72,88,0.18) !important;
+      box-shadow: 0 4px 24px 0 rgba(60,72,88,0.18) !important;
+      font-family: MiSans, NotoEmoji, system-ui !important;
+      font-size: 15px !important;
+      padding: 10px 16px !important;
+    }
+    .echarts-tooltip .flex {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+    .echarts-tooltip .w-4 {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-card">
+    <button class="theme-toggle-btn" id="theme-toggle" title="切换明暗模式">
+      <span id="theme-toggle-icon">🌙</span>
+    </button>
+    <img src="pwa-192x192.png" class="logo" alt="logo" />
+    <h2>网络状态仪表盘</h2>
+    <button class="reset-btn" id="reset">网络重置</button>
+    <div class="status-gauges">
+      <div class="gauge">
+        <div class="gauge-value" id="conn-count">--</div>
+        <div class="gauge-label">连接数</div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-value" id="ul-speed">--</div>
+        <div class="gauge-label">上行速率</div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-value" id="dl-speed">--</div>
+        <div class="gauge-label">下行速率</div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-value" id="mem">--</div>
+        <div class="gauge-label">内存</div>
+      </div>
+    </div>
+    <div id="traffic-chart" style="width:370px;height:112px;margin:5px 0 0 0;"></div>
+    <div class="msg" id="msg"></div>
+    <button class="conn-detail-btn" id="conn-detail-btn" style="
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 0;
+      margin: 12px 0 0 0;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
+      cursor: pointer;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, box-shadow 0.2s;
+    "
+    onmouseover="this.style.background='linear-gradient(90deg,#60a5fa 0%,#6366f1 100%)';this.style.boxShadow='0 4px 16px 0 rgba(99,102,241,0.18)';"
+    onmouseout="this.style.background='linear-gradient(90deg,#6366f1 0%,#60a5fa 100%)';this.style.boxShadow='0 2px 8px 0 rgba(99,102,241,0.10)';"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right:4px;"><path d="M12 7v10m5-5H7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      连接详情
+    </button>
+    <div class="conn-modal" id="conn-modal" style="display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:999;align-items:center;justify-content:center;">
+      <div class="conn-modal-content" style="background:#fff;padding:20px 16px;border-radius:12px;min-width:320px;max-width:90vw;max-height:80vh;overflow:auto;box-shadow:0 4px 24px 0 rgba(60,72,88,0.18);">
+        <h3 style="margin-top:0">连接详情 <button id="close-conn-modal" style="float:right;font-size:17px;background:none;border:none;color:#888;opacity:0.6;cursor:pointer;transition:color 0.2s,opacity 0.2s;padding:0 10px;line-height:1;" onmouseover="this.style.color='#d9534f';this.style.opacity='1';" onmouseout="this.style.color='#888';this.style.opacity='0.6';">退出</button></h3>
+        <div id="conn-list"></div>
+      </div>
+    </div>
+    <!-- 设置弹窗 -->
+    <div class="settings-modal" id="settings-modal">
+      <div class="settings-content">
+        <h3>设置</h3>
+        <label>IP地址 <input type="text" id="ip" /></label>
+        <label>端口 <input type="text" id="port" /></label>
+        <label>Token <input type="text" id="token" /></label>
+        <div class="btn-row">
+          <button id="save">保存</button>
+          <button id="close-settings">关闭</button>
+        </div>
+        <div class="msg" id="settings-msg"></div>
+      </div>
+    </div>
+    <!-- 悬浮设置按钮 -->
+    <button id="open-settings" title="设置" style="
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(120,120,120,0.10);
+      color: #888;
+      border: none;
+      box-shadow: none;
+      opacity: 0.55;
+      transition: background 0.2s, opacity 0.2s;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-size: 18px;
+      cursor: pointer;
+    "
+    onmouseover="this.style.background='rgba(120,120,120,0.18)';this.style.opacity='0.75';"
+    onmouseout="this.style.background='rgba(120,120,120,0.10)';this.style.opacity='0.55';"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm7.43-2.9l1.77-1.02a1 1 0 0 0 .37-1.36l-1.67-2.89a1 1 0 0 0-1.36-.37l-1.77 1.02a7.03 7.03 0 0 0-1.52-.88l-.27-1.96A1 1 0 0 0 13 2h-2a1 1 0 0 0-1 .84l-.27 1.96a7.03 7.03 0 0 0-1.52.88l-1.77-1.02a1 1 0 0 0-1.36.37l-1.67 2.89a1 1 0 0 0 .37 1.36l1.77 1.02c-.09.32-.16.65-.21.99l-1.96.27A1 1 0 0 0 2 11v2a1 1 0 0 0 .84 1l1.96.27c.05.34.12.67.21.99l-1.77 1.02a1 1 0 0 0-.37 1.36l1.67 2.89a1 1 0 0 0 1.36.37l1.77-1.02c.47.34.98.64 1.52.88l.27 1.96A1 1 0 0 0 11 22h2a1 1 0 0 0 1-.84l.27-1.96c.54-.24 1.05-.54 1.52-.88l1.77 1.02a1 1 0 0 0 1.36-.37l1.67-2.89a1 1 0 0 0-.37-1.36l-1.77-1.02c.09-.32.16-.65.21-.99l1.96-.27A1 1 0 0 0 22 13v-2a1 1 0 0 0-.84-1l-1.96-.27a7.07 7.07 0 0 0-.21-.99z" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+  </div>
+  <script src="echarts.min.js"></script>
+  <script src="popup.js"></script>
+  <script>
+    // 主题切换逻辑
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('router-theme', theme);
+      document.getElementById('theme-toggle-icon').textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+    function detectSystemTheme() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+      // 初始化主题
+      let theme = localStorage.getItem('router-theme');
+      if (!theme) theme = detectSystemTheme();
+      setTheme(theme);
+
+      document.getElementById('theme-toggle').onclick = function() {
+        let current = document.documentElement.getAttribute('data-theme');
+        setTheme(current === 'dark' ? 'light' : 'dark');
+      };
+
+      // 跟随系统变化自动切换
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('router-theme')) {
+          setTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+    });
+  </script>
+</body>
+</html> 
